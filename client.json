@@ -1,0 +1,264 @@
+{
+    "log": {
+        "disabled": false,
+        "level": "warn",
+        "output": "sing-box.log",
+        "timestamp": true
+    },
+    "dns": {
+        "servers": [
+            {
+                "tag": "default-dns",
+                "address": "223.5.5.5",
+                "detour": "direct-out"
+            },
+            {
+                "tag": "system-dns",
+                "address": "local",
+                "detour": "direct-out"
+            },
+            {
+                "tag": "block-dns",
+                "address": "rcode://name_error"
+            },
+            {
+                "tag": "google",
+                "address": "https://dns.google/dns-query",
+                "address_resolver": "default-dns",
+                "address_strategy": "ipv4_only",
+                "strategy": "ipv4_only",
+                "client_subnet": "1.0.1.0"
+            }
+        ],
+        "rules": [
+            {
+                "outbound": "any",
+                "server": "default-dns"
+            },
+            {
+                "query_type": "HTTPS",
+                "server": "block-dns"
+            },
+            {
+                "clash_mode": "direct",
+                "server": "default-dns"
+            },
+            {
+                "clash_mode": "global",
+                "server": "google"
+            },
+            {
+                "rule_set": "cnsite",
+                "server": "default-dns"
+            }
+        ],
+        "strategy": "prefer_ipv4",
+        "disable_cache": false,
+        "disable_expire": false,
+        "independent_cache": false,
+        "final": "google"
+    },
+    "inbounds": [
+        {
+            "type": "tun",
+            "inet4_address": "172.19.0.1/30",
+            "inet6_address": "2001:0470:f9da:fdfa::1/64",
+            "sniff": true,
+            "sniff_override_destination": true,
+            "domain_strategy": "prefer_ipv4",
+            "stack": "mixed",
+            "strict_route": true,
+            "mtu": 9000,
+            "endpoint_independent_nat": true,
+            "auto_route": true
+        },
+        {
+            "type": "mixed",
+            "tag": "mixed-in",
+            "sniff": true,
+            "sniff_override_destination": true,
+            "domain_strategy": "prefer_ipv4",
+            "listen": "127.0.0.1",
+            "listen_port": 2334,
+            "users": [
+
+            ]
+        }
+    ],
+    "outbounds": [
+        {
+            "type": "socks",
+            "server": "127.0.0.1",
+            "server_port": 11080,
+		   "network": "tcp",
+            "tag": "inter-out"        
+		},
+        {
+            "type": "socks",
+            "server": "127.0.0.1",
+            "server_port": 21080,
+            "network": "tcp",
+            "tag": "intra-out"        
+		},
+        {
+            "type": "direct",
+            "tag": "direct-out",
+            "routing_mark": 100
+        },
+        {
+            "type": "block",
+            "tag": "block-out"
+        },
+        {
+            "type": "dns",
+            "tag": "dns-out"
+        },
+        {
+            "type": "urltest",
+            "tag": "自动选择",
+            "outbounds": [
+                 "🇸🇬hysteria2🚀",
+                "🇸🇬reality🛡️"
+               
+            ]
+        },
+        {
+            "type": "selector",
+            "tag": "手动选择",
+            "outbounds": [
+                "direct-out",
+                "block-out",
+                "自动选择",
+                "🇸🇬hysteria2🚀",
+                "🇸🇬reality🛡️"
+            ],
+            "default": "自动选择"
+        },
+        {
+            "type": "selector",
+            "tag": "GLOBAL",
+            "outbounds": [
+                "direct-out",
+                "手动选择",
+                "🇸🇬hysteria2🚀",
+                "🇸🇬reality🛡️"
+            ],
+            "default": "手动选择"
+        },
+        {
+            "type": "vless",
+            "tag": "🇸🇬reality🛡️",
+            "uuid": "f31bc5d0-a1d3-4487-b8b8-de4e30ac3c77",
+            "flow": "xtls-rprx-vision",
+            "packet_encoding": "xudp",
+            "server": "54.179.187.220",
+            "server_port": 48215,
+            "tls": {
+                "enabled": true,
+                "server_name": "learn.microsoft.com",
+                "utls": {
+                    "enabled": true,
+                    "fingerprint": "chrome"
+                },
+                "reality": {
+                    "enabled": true,
+                    "public_key": "tsvdWTIkb5BlqErQCf5sct8wnXTF3PDZJQB4wGMOCQw",
+                    "short_id": "fd3c643b"
+                }
+            }
+        },
+        {
+            "type": "hysteria2",
+            "server": "54.179.187.220",
+            "server_port": 8443,
+            "tag": "🇸🇬hysteria2🚀",
+            "password": "0Z11bs5BSJIoEUjLL9ert0rZ",
+            "tls": {
+                "enabled": true,
+                "server_name": "bing.com",
+                "insecure": true,
+                "alpn": [
+                    "h3"
+                ]
+            }
+        }
+        
+    ],
+    "route": {
+        "rules": [
+            {
+                "ip_cidr": [
+                    "10.109.0.0/16",
+                    "10.111.0.0/16"
+                ],
+                "outbound": "inter-out"
+            },
+            {
+                "ip_cidr": [
+                    "172.18.0.0/16",
+                    "172.21.0.0/16",
+                    "172.26.0.0/16",
+                    "10.135.0.0/16"
+                ],
+                "outbound": "intra-out"
+            },
+            {
+                "inbound": "dns-in",
+                "outbound": "dns-out"
+            },
+            {
+                "protocol": "dns",
+                "outbound": "dns-out"
+            },
+            {
+                "protocol": "quic",
+                "outbound": "block-out"
+            },
+            {
+                "clash_mode": "direct",
+                "outbound": "direct-out"
+            },
+            {
+                "clash_mode": "global",
+                "outbound": "GLOBAL"
+            },
+            {
+                "rule_set": [
+                    "cnip",
+                    "cnsite"
+                ],
+                "outbound": "direct-out"
+            }
+        ],
+        "rule_set": [
+            {
+                "type": "remote",
+                "tag": "cnip",
+                "format": "binary",
+                "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/sing/geo-lite/geoip/cn.srs",
+                "download_detour": "自动选择"
+            },
+            {
+                "type": "remote",
+                "tag": "cnsite",
+                "format": "binary",
+                "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/sing/geo-lite/geosite/cn.srs",
+                "download_detour": "自动选择"
+            }
+        ],
+        "auto_detect_interface": true,
+        "final": "手动选择"
+    },
+    "experimental": {
+        "cache_file": {
+            "enabled": true,
+            "path": "cache.db"
+        },
+        "clash_api": {
+            "external_controller": "127.0.0.1:9090",
+            "external_ui": "ui",
+            "external_ui_download_detour": "自动选择",
+            "default_mode": "rule"
+          }
+    }
+}
